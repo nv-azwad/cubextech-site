@@ -1,107 +1,208 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { Menu, X, ChevronRight, ArrowRight, Phone, Mail, MapPin, Shield, Users, Home, Code, Truck, Zap, CheckCircle, QrCode, Bell, Eye, Linkedin, Facebook, Instagram } from 'lucide-react';
+import { Menu, X, ChevronRight, ArrowRight, Phone, Mail, MapPin, Shield, Users, Home, Code, Truck, Zap, CheckCircle, QrCode, Bell, Eye, Building } from 'lucide-react';
 
-// ==================== GLOBE 3D COMPONENT ====================
-function Globe3D() {
-  const [connections, setConnections] = useState([]);
+// ==================== CUBE 3D COMPONENT ====================
+function Cube3D() {
+  const sizeX = 100;
+  const sizeY = 140;
+  const sizeZ = 100;
+  const centerX = 300;
+  const centerY = 280;
 
-  useEffect(() => {
-    const newConnections = Array.from({ length: 8 }, () => ({
-      x1: Math.random() * 400 + 100,
-      y1: Math.random() * 400 + 100,
-      x2: Math.random() * 400 + 100,
-      y2: Math.random() * 400 + 100,
-    }));
-    setConnections(newConnections);
-  }, []);
+  const angleX = Math.PI / 6;
+  const angleY = Math.PI / 6;
 
-  const dots = Array.from({ length: 40 }, (_, i) => {
-    const angle = (i / 40) * Math.PI * 2;
-    const row = Math.floor(i / 8);
-    const radius = 140 - Math.abs(row - 2.5) * 20;
+  const iso = (x, y, z) => {
     return {
-      x: Math.cos(angle) * radius + 300,
-      y: Math.sin(angle) * radius + 300 + (row - 2.5) * 40,
-      delay: i * 0.02,
+      x: centerX + (x - z) * Math.cos(angleX) * 1.2,
+      y: centerY + (x + z) * Math.sin(angleY) * 0.6 + y * 0.8,
     };
-  });
+  };
+
+  const vertices = [
+    iso(-sizeX, -sizeY, -sizeZ),
+    iso(sizeX, -sizeY, -sizeZ),
+    iso(sizeX, sizeY, -sizeZ),
+    iso(-sizeX, sizeY, -sizeZ),
+    iso(-sizeX, -sizeY, sizeZ),
+    iso(sizeX, -sizeY, sizeZ),
+    iso(sizeX, sizeY, sizeZ),
+    iso(-sizeX, sizeY, sizeZ),
+  ];
+
+  const edges = [
+    [0, 1], [1, 2], [2, 3], [3, 0],
+    [4, 5], [5, 6], [6, 7], [7, 4],
+    [0, 4], [1, 5], [2, 6], [3, 7],
+  ];
+
+  const faces = [
+    { points: [4, 5, 6, 7], gradient: "url(#faceGradient1)" },
+    { points: [1, 2, 6, 5], gradient: "url(#faceGradient2)" },
+    { points: [2, 3, 7, 6], gradient: "url(#faceGradient3)" },
+  ];
+
+  const dotPaths = [
+    { target: 0, path: [4, 0], color: "#10b981", delay: 0 },
+    { target: 1, path: [5, 1], color: "#8b5cf6", delay: 0.5 },
+    { target: 2, path: [6, 2], color: "#06b6d4", delay: 1 },
+    { target: 3, path: [7, 3], color: "#10b981", delay: 1.5 },
+    { target: 4, path: [0, 4], color: "#8b5cf6", delay: 2 },
+    { target: 5, path: [1, 5], color: "#06b6d4", delay: 2.5 },
+    { target: 6, path: [2, 6], color: "#10b981", delay: 3 },
+    { target: 7, path: [3, 7], color: "#8b5cf6", delay: 3.5 },
+  ];
+
+  const innerScale = 0.5;
+  const innerVertices = [
+    iso(-sizeX * innerScale, -sizeY * innerScale, -sizeZ * innerScale),
+    iso(sizeX * innerScale, -sizeY * innerScale, -sizeZ * innerScale),
+    iso(sizeX * innerScale, sizeY * innerScale, -sizeZ * innerScale),
+    iso(-sizeX * innerScale, sizeY * innerScale, -sizeZ * innerScale),
+    iso(-sizeX * innerScale, -sizeY * innerScale, sizeZ * innerScale),
+    iso(sizeX * innerScale, -sizeY * innerScale, sizeZ * innerScale),
+    iso(sizeX * innerScale, sizeY * innerScale, sizeZ * innerScale),
+    iso(-sizeX * innerScale, sizeY * innerScale, sizeZ * innerScale),
+  ];
+
+  const innerEdges = [
+    [0, 1], [1, 2], [2, 3], [3, 0],
+    [4, 5], [5, 6], [6, 7], [7, 4],
+    [0, 4], [1, 5], [2, 6], [3, 7],
+  ];
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="w-96 h-96 bg-gradient-to-r from-purple-500/30 via-emerald-500/30 to-purple-500/30 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="w-[400px] h-[400px] bg-gradient-to-r from-purple-500/20 via-emerald-500/20 to-cyan-500/20 rounded-full blur-3xl"
         />
       </div>
 
-      <svg width="600" height="600" viewBox="0 0 600 600" className="relative z-10" style={{ filter: "drop-shadow(0 0 40px rgba(139, 92, 246, 0.3))" }}>
-        {connections.map((conn, i) => (
-          <motion.line key={`conn-${i}`} x1={conn.x1} y1={conn.y1} x2={conn.x2} y2={conn.y2} stroke="url(#lineGradient)" strokeWidth="1"
-            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.6 }}
-            transition={{ duration: 2, delay: i * 0.2, repeat: Infinity, repeatType: "reverse", repeatDelay: 1 }}
-          />
-        ))}
-        <motion.circle cx="300" cy="300" r="150" fill="none" stroke="url(#circleGradient)" strokeWidth="2"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }}
-        />
-        <motion.circle cx="300" cy="300" r="150" fill="url(#radialGradient)"
-          initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.5, delay: 0.5 }}
-        />
-        <motion.ellipse cx="300" cy="300" rx="180" ry="60" fill="none" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="1"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5 }}
-        />
-        <motion.ellipse cx="300" cy="300" rx="180" ry="60" fill="none" stroke="rgba(16, 185, 129, 0.3)" strokeWidth="1" transform="rotate(60 300 300)"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.7 }}
-        />
-        <motion.ellipse cx="300" cy="300" rx="180" ry="60" fill="none" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="1" transform="rotate(120 300 300)"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.9 }}
-        />
-        {[0, 1, 2, 3, 4].map((i) => {
-          const y = 200 + i * 50;
-          const rx = Math.sqrt(150 * 150 - Math.pow(y - 300, 2));
+      <svg width="600" height="600" viewBox="0 0 600 600" className="relative z-10" style={{ filter: "drop-shadow(0 0 30px rgba(139, 92, 246, 0.3))" }}>
+        {faces.map((face, index) => {
+          const faceVertices = face.points.map((i) => vertices[i]);
+          const pathData = `M ${faceVertices[0].x} ${faceVertices[0].y} ` + faceVertices.slice(1).map((v) => `L ${v.x} ${v.y}`).join(" ") + " Z";
           return (
-            <motion.ellipse key={`lat-${i}`} cx="300" cy="300" rx={rx} ry="10" fill="none" stroke="rgba(139, 92, 246, 0.2)" strokeWidth="1" transform={`translate(0 ${y - 300})`}
-              initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 1.5, delay: 1 + i * 0.1 }}
+            <motion.path key={`face-${index}`} d={pathData} fill={face.gradient}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.8, 0.5, 0.8] }}
+              transition={{ duration: 4, delay: 0.5 + index * 0.2, repeat: Infinity, ease: "easeInOut" }}
             />
           );
         })}
-        {dots.map((dot, i) => (
-          <motion.circle key={`dot-${i}`} cx={dot.x} cy={dot.y} r="2" fill={i % 3 === 0 ? "#10b981" : "#8b5cf6"}
-            initial={{ scale: 0, opacity: 0 }} animate={{ scale: [0, 1, 1], opacity: [0, 1, 0.6] }}
-            transition={{ duration: 2, delay: dot.delay + 1.5, repeat: Infinity, repeatDelay: 3 }}
-          />
+
+        {edges.map((edge, index) => {
+          const v1 = vertices[edge[0]];
+          const v2 = vertices[edge[1]];
+          let strokeColor = "url(#edgeGradient)";
+          if (index < 4) strokeColor = "url(#edgeGradient1)";
+          else if (index < 8) strokeColor = "url(#edgeGradient2)";
+          return (
+            <motion.line key={`edge-${index}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ pathLength: { duration: 1.5, delay: index * 0.1, ease: "easeOut" }, opacity: { duration: 0.8, delay: index * 0.1 } }}
+            />
+          );
+        })}
+
+        {innerEdges.map((edge, index) => {
+          const v1 = innerVertices[edge[0]];
+          const v2 = innerVertices[edge[1]];
+          return (
+            <motion.line key={`inner-edge-${index}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="url(#innerGradient)" strokeWidth="1.5" strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: [0, 1, 1, 0], opacity: [0, 0.6, 0.6, 0] }}
+              transition={{ duration: 6, delay: 2 + index * 0.3, repeat: Infinity, ease: "easeInOut" }}
+            />
+          );
+        })}
+
+        {dotPaths.map((dotPath, index) => {
+          const startVertex = vertices[dotPath.path[0]];
+          const endVertex = vertices[dotPath.path[1]];
+          return (
+            <g key={`dot-${index}`}>
+              <motion.circle r="6" fill={dotPath.color} opacity="0.15" filter="url(#glow)"
+                animate={{ cx: [startVertex.x, endVertex.x, startVertex.x], cy: [startVertex.y, endVertex.y, startVertex.y] }}
+                transition={{ duration: 8, delay: dotPath.delay, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.circle r="2.5" fill={dotPath.color} filter="url(#glow)"
+                animate={{ cx: [startVertex.x, endVertex.x, startVertex.x], cy: [startVertex.y, endVertex.y, startVertex.y], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 8, delay: dotPath.delay, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </g>
+          );
+        })}
+
+        {vertices.map((vertex, index) => (
+          <g key={`vertex-${index}`}>
+            <motion.circle cx={vertex.x} cy={vertex.y} r="8" fill="none" stroke={index % 2 === 0 ? "#10b981" : "#8b5cf6"} strokeWidth="1.5" opacity="0.4"
+              animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.4, 0.1, 0.4] }}
+              transition={{ duration: 3, delay: index * 0.2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.circle cx={vertex.x} cy={vertex.y} r="3.5" fill={index % 2 === 0 ? "#10b981" : "#8b5cf6"} filter="url(#glow)"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.9 }}
+              transition={{ duration: 0.8, delay: 0.5 + index * 0.1, ease: "backOut" }}
+            />
+          </g>
         ))}
+
         <defs>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="edgeGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.7" />
+          </linearGradient>
+          <linearGradient id="edgeGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="1" />
+            <stop offset="100%" stopColor="#34d399" stopOpacity="0.8" />
+          </linearGradient>
+          <linearGradient id="edgeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#10b981" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.8" />
           </linearGradient>
-          <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8b5cf6" />
-            <stop offset="50%" stopColor="#10b981" />
-            <stop offset="100%" stopColor="#8b5cf6" />
+          <linearGradient id="innerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.8" />
           </linearGradient>
-          <radialGradient id="radialGradient">
-            <stop offset="0%" stopColor="rgba(139, 92, 246, 0.1)" />
-            <stop offset="50%" stopColor="rgba(16, 185, 129, 0.05)" />
-            <stop offset="100%" stopColor="rgba(0, 0, 0, 0)" />
-          </radialGradient>
+          <linearGradient id="faceGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#34d399" stopOpacity="0.15" />
+          </linearGradient>
+          <linearGradient id="faceGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.15" />
+          </linearGradient>
+          <linearGradient id="faceGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.15" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
       </svg>
 
-      <motion.div className="absolute inset-0 flex items-center justify-center" animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}>
-        <div className="w-[400px] h-[400px] border border-purple-500/20 rounded-full" />
+      <motion.div className="absolute inset-0 flex items-center justify-center pointer-events-none" animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }}>
+        <div className="w-[400px] h-[400px] border border-purple-500/10 rounded-full" />
       </motion.div>
 
-      <div className="absolute inset-0">
-        <div className="absolute top-8 left-8 w-4 h-4 border-l-2 border-t-2 border-cyan-400" />
-        <div className="absolute top-8 right-8 w-4 h-4 border-r-2 border-t-2 border-cyan-400" />
-        <div className="absolute bottom-8 left-8 w-4 h-4 border-l-2 border-b-2 border-cyan-400" />
-        <div className="absolute bottom-8 right-8 w-4 h-4 border-r-2 border-b-2 border-cyan-400" />
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} className="absolute top-8 left-8 w-5 h-5 border-l-2 border-t-2 border-cyan-400/60" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} className="absolute top-8 right-8 w-5 h-5 border-r-2 border-t-2 border-cyan-400/60" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.7 }} className="absolute bottom-8 left-8 w-5 h-5 border-l-2 border-b-2 border-cyan-400/60" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }} className="absolute bottom-8 right-8 w-5 h-5 border-r-2 border-b-2 border-cyan-400/60" />
       </div>
     </div>
   );
@@ -154,7 +255,7 @@ function StatCounter({ value, suffix = '', label }) {
 export default function CubeXTechWebsite() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  const navBg = useTransform(scrollY, [0, 100], ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.9)"]);
+  const navBg = useTransform(scrollY, [0, 100], ["rgba(13, 13, 20, 0)", "rgba(13, 13, 20, 0.95)"]);
 
   const services = [
     { icon: Home, title: "CubeX Home", description: "Smart residential security with visitor management, QR access, and real-time monitoring.", color: "emerald", highlight: true },
@@ -168,8 +269,7 @@ export default function CubeXTechWebsite() {
   const clients = [
     { name: "Flash Express", initial: "FE", color: "from-amber-500 to-orange-500" },
     { name: "Centroz", initial: "C", color: "from-blue-500 to-cyan-500" },
-    { name: "PJS 1", initial: "P1", color: "from-emerald-500 to-teal-500" },
-    { name: "Sri Ara", initial: "SA", color: "from-purple-500 to-pink-500" },
+    { name: "Condominiums", initial: "CD", color: "from-emerald-500 to-teal-500" },
   ];
 
   const cubexHomeFeatures = [
@@ -189,10 +289,10 @@ export default function CubeXTechWebsite() {
       {/* ==================== NAVIGATION ==================== */}
       <motion.nav style={{ backgroundColor: navBg }} className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="flex items-center justify-between h-20">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="text-2xl font-bold italic tracking-tight">
-              CUBEX<span className="text-emerald-400">TECH</span>
-            </motion.div>
+          <div className="flex items-center justify-between h-24">
+            <motion.a href="#home" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="flex items-center">
+              <img src="/logo.png" alt="CubeX Tech" className="h-30 md:h-34 lg:h-44 w-auto" />
+            </motion.a>
             <div className="hidden lg:flex items-center gap-2">
               {[{ label: "Home", href: "#home", active: true }, { label: "Services", href: "#services" }, { label: "CubeX Home", href: "#cubex-home" }, { label: "Clients", href: "#clients" }, { label: "Contact", href: "#contact" }].map((item, i) => (
                 <motion.a key={item.label} href={item.href} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 + i * 0.05 }}
@@ -246,7 +346,7 @@ export default function CubeXTechWebsite() {
               <motion.div initial={{ width: 0 }} animate={{ width: "200px" }} transition={{ duration: 1.5, delay: 1.2 }} className="h-[1px] bg-gradient-to-r from-purple-500 via-emerald-500 to-transparent" />
             </div>
             <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }} className="relative h-[600px] hidden lg:block">
-              <Globe3D />
+              <Cube3D />
             </motion.div>
           </div>
         </div>
@@ -347,7 +447,7 @@ export default function CubeXTechWebsite() {
                     { icon: Bell, title: "Instant Notifications", desc: "Real-time visitor alerts" },
                     { icon: Shield, title: "Secure Management", desc: "Guard interface & activity logs" }
                   ].map((item, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.1 }} className="bg-[#0d0d14]/40 rounded-xl p-4 flex items-center gap-4 border border-white/[0.05]">
+                    <motion.div key={i} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.1 }} className="bg-[#0d0d14]/60 rounded-xl p-4 flex items-center gap-4 border border-white/[0.05]">
                       <div className="bg-gradient-to-br from-emerald-500/20 to-purple-500/20 p-3 rounded-lg">
                         <item.icon className="w-6 h-6 text-emerald-400" />
                       </div>
@@ -408,7 +508,7 @@ export default function CubeXTechWebsite() {
             <p className="text-lg text-gray-500">Building lasting relationships with organizations and residential communities</p>
           </AnimatedSection>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {clients.map((client, i) => (
               <AnimatedSection key={i} delay={i * 0.1}>
                 <motion.div whileHover={{ y: -8, scale: 1.02 }} className="bg-gradient-to-br from-white/[0.03] to-transparent rounded-2xl p-8 border border-white/[0.05] hover:border-purple-500/30 transition-all text-center group">
@@ -445,8 +545,8 @@ export default function CubeXTechWebsite() {
               <p className="text-xl text-gray-400 mb-10 leading-relaxed">Ready to transform your business with smart technology solutions? Get in touch with our team today.</p>
               
               <div className="space-y-6">
-                {[{ icon: MapPin, title: "Address", value: "Selangor, Malaysia" },
-                  { icon: Phone, title: "Phone", value: "Contact us for inquiries" },
+                {[{ icon: MapPin, title: "Address", value: "Lot 110, Jalan 28/10a, Taman Perindustrian Iks, 68100 Batu Caves, Selangor" },
+                  { icon: Phone, title: "Phone", value: "+60 18-919 9975" },
                   { icon: Mail, title: "Email", value: "info@cubextech.net" }
                 ].map((item, i) => (
                   <motion.div key={i} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="flex items-start gap-4">
@@ -468,15 +568,15 @@ export default function CubeXTechWebsite() {
                 <form className="space-y-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">Name</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/50 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white placeholder-gray-600" placeholder="Your name" />
+                    <input type="text" className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/60 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white placeholder-gray-600" placeholder="Your name" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
-                    <input type="email" className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/50 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white placeholder-gray-600" placeholder="your@email.com" />
+                    <input type="email" className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/60 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white placeholder-gray-600" placeholder="your@email.com" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">Service Interest</label>
-                    <select className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/50 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white">
+                    <select className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/60 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white">
                       <option>CubeX Home</option>
                       <option>Visitor Management System</option>
                       <option>Custom Software Development</option>
@@ -488,7 +588,7 @@ export default function CubeXTechWebsite() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
-                    <textarea className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/50 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white placeholder-gray-600 h-32 resize-none" placeholder="Tell us about your project..."></textarea>
+                    <textarea className="w-full px-4 py-3 rounded-xl bg-[#0d0d14]/60 border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition text-white placeholder-gray-600 h-32 resize-none" placeholder="Tell us about your project..."></textarea>
                   </div>
                   <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full bg-gradient-to-r from-purple-500 to-emerald-500 py-4 rounded-xl font-semibold transition-all text-black">
                     Send Message
@@ -505,15 +605,10 @@ export default function CubeXTechWebsite() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             <div>
-              <div className="text-2xl font-bold italic mb-6">CUBEX<span className="text-emerald-400">TECH</span></div>
+              <a href="#home" className="inline-block mb-6">
+                <img src="/logo.png" alt="CubeX Tech" className="h-26 w-auto" />
+              </a>
               <p className="text-gray-500 leading-relaxed mb-6">Smart solutions for modern businesses. Empowering residential and commercial clients with cutting-edge technology.</p>
-              <div className="flex gap-4">
-                {[Facebook, Instagram, Linkedin].map((Icon, i) => (
-                  <motion.a key={i} href="#" whileHover={{ scale: 1.1, y: -3 }} className="w-10 h-10 bg-white/[0.05] hover:bg-purple-500/20 border border-white/[0.1] hover:border-purple-500/30 rounded-full flex items-center justify-center transition-all">
-                    <Icon className="w-5 h-5 text-gray-400" />
-                  </motion.a>
-                ))}
-              </div>
             </div>
             <div>
               <h3 className="text-lg font-bold mb-6 text-white">Quick Links</h3>
@@ -534,7 +629,8 @@ export default function CubeXTechWebsite() {
             <div>
               <h3 className="text-lg font-bold mb-6 text-white">Contact Us</h3>
               <ul className="space-y-4">
-                <li className="flex items-start gap-3 text-gray-500"><MapPin className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" /><span>Selangor, Malaysia</span></li>
+                <li className="flex items-start gap-3 text-gray-500"><MapPin className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" /><span>Lot 110, Jalan 28/10a, Taman Perindustrian Iks, 68100 Batu Caves, Selangor</span></li>
+                <li className="flex items-center gap-3 text-gray-500"><Phone className="w-5 h-5 text-purple-400 flex-shrink-0" /><span>+60 18-919 9975</span></li>
                 <li className="flex items-center gap-3 text-gray-500"><Mail className="w-5 h-5 text-purple-400 flex-shrink-0" /><span>info@cubextech.net</span></li>
               </ul>
             </div>
